@@ -1,0 +1,55 @@
+import requests
+import time
+
+assetID = "spooky.funko"  # The asset you want to buy
+desiredPrice = "20000000"  # The price you want to buy it for, in WAX
+privateKeys = ["qwee"]
+actor = "qq"  # the address that has the authority to make these transactions
+
+def get_sales():
+    url = f"https://wax.api.atomicassets.io/atomicmarket/v2/sales?state=1&collection_name={assetID}&page=1&limit=100&order=desc&sort=created"
+    response = requests.get(url)
+    return response.json()
+
+while True:
+    data = get_sales()
+
+    for sale in data["data"]:
+        print("\nI'm working, I'll let you know when I find something.")
+        price = sale["listing_price"].strip()
+        print("\nPrice: " + price)
+        saleID = sale["sale_id"]
+        symbol = sale["listing_symbol"]
+        state = sale["state"]
+        usdPrice = sale["price"]["amount"]
+        print("\nUSD PRICE: " + usdPrice)
+        median = sale["price"]["median"]
+        usdToPay = f"{usdPrice[:-8]}.{usdPrice[-8:]} WAX"
+        print("\nUSD TO PAY: " + usdToPay)
+        firstUTPChar = usdToPay[0]
+        if firstUTPChar == ".":
+            usdToPay = "0" + usdToPay
+        print("\nUSD TO PAY: " + usdToPay)
+
+        if symbol == "WAX" and int(price) <= int(desiredPrice) and state == 1:
+            waxToPay = f"{price[:-8]}.{price[-8:]} WAX"
+            firstChar = waxToPay[0]
+            if firstChar == ".":
+                waxToPay = "0" + waxToPay
+            print("\nWAX TO PAY: \n" + waxToPay + " It's a good WAX deal!")
+
+            # Ваш код для транзакций здесь
+
+        elif symbol == "WAX" and int(price) > int(desiredPrice) and state == 1:
+            print("\nBad deal!")
+
+        elif symbol == "USD" and int(usdPrice) <= int(desiredPrice) and state == 1:
+            priceToAssert = f"{price[:-2]}.{price[-2:]} USD"
+
+            firstUSDChar = priceToAssert[0]
+            if firstUSDChar == ".":
+                priceToAssert = "0" + priceToAssert
+
+            # Ваш код для транзакций здесь
+
+    time.sleep(4)  # Добавлена пауза в 4 секунды перед следующим запросом данных
